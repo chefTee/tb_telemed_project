@@ -26,6 +26,11 @@ const SignUpPatient = () => {
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
+        options: {
+        data: {
+          full_name: formData.fullName,
+        }
+      }
       });
 
       if (error) {

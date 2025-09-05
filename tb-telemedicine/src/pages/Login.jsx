@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { supabase } from "../client";
 import { Link, useNavigate } from "react-router-dom";
 
-const Login = () => {
+const Login = ( {setToken}) => {
   let navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -36,7 +36,8 @@ const Login = () => {
 
       console.log("User:", data.user);
       console.log("Session:", data.session);
-
+      
+      setToken(data)
       navigate("/homepage"); // redirect after login
     } catch (err) {
       alert(err.message);
