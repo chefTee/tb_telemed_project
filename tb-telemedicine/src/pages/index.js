@@ -2,8 +2,9 @@ import Landing from './Landing'
 import Login from './Login'
 import SignUpPatient from './SignUpPatient'
 import SignUpDoctor from './SignUpDoctor'
-import HomePage from './HomePage'
+import PatientDashboard from './PatientDasboard'
+import DoctorDashboard from './DoctorDashboard'
 
 export{
-    Landing, Login, SignUpPatient, SignUpDoctor, HomePage
+    Landing, Login, SignUpPatient, SignUpDoctor, PatientDashboard, DoctorDashboard
 }

@@ -22,13 +22,14 @@ const SignUpPatient = () => {
     e.preventDefault();
 
     try {
-      // Step 1: Sign up the user in Supabase Auth
+      // Sign up the user in Supabase Auth
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
         data: {
           full_name: formData.fullName,
+          role: "patient",
         }
       }
       });
@@ -40,7 +41,7 @@ const SignUpPatient = () => {
 
       const user = data.user;
 
-      // Step 2: Insert into profiles table
+      // Inserting into profiles table
       if (user) {
         const { error: profileError } = await supabase.from("profiles").insert([
           {
