@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './client';
 
-export default function Avatar({ url, size, onUpload }) {
+export default function Avatar({ url, size, onUpload, readOnly = false }) {
   const [avatarUrl, setAvatarUrl] = useState(null)
   const [uploading, setUploading] = useState(false)
 
@@ -61,23 +61,27 @@ export default function Avatar({ url, size, onUpload }) {
       ) : (
         <div className="avatar no-image" style={{ height: size, width: size }} />
       )}
-      <div style={{ width: size }}>
-        <label className="button primary block text-green" htmlFor="single">
-          {uploading ? 'Uploading ...' : 'Upload'}
-        </label>
-        <input
-          style={{
-            visibility: 'hidden',
-            position: 'absolute',
-            backgroundColor:'#faebd7'
-          }}
-          type="file"
-          id="single"
-          accept="image/*"
-          onChange={uploadAvatar}
-          disabled={uploading}
-        />
-      </div>
+      
+      {/* Only show upload controls if not in read-only mode */}
+      {!readOnly && (
+        <div style={{ width: size }}>
+          <label className="button primary block text-green" htmlFor="single">
+            {uploading ? 'Uploading ...' : 'Upload'}
+          </label>
+          <input
+            style={{
+              visibility: 'hidden',
+              position: 'absolute',
+              backgroundColor:'#faebd7'
+            }}
+            type="file"
+            id="single"
+            accept="image/*"
+            onChange={uploadAvatar}
+            disabled={uploading}
+          />
+        </div>
+      )}
     </div>
   )
 }

@@ -1,9 +1,20 @@
 import { useState, useEffect } from 'react'
+import { useParams, useLocation } from 'react-router-dom'
 import { supabase } from "../../client";
 import Avatar from '../../Avatar';
 
 export default function PatientProfile({ token }) {
+  const { id } = useParams();
+  const location = useLocation();
+  
+  // If the route contains '/doctor/', then a doctor is viewing this
+  const isDoctor = location.pathname.includes('/doctor/');
+  
+  // Use the patient ID from URL if doctor is viewing, otherwise use token user ID
+  const userId = isDoctor && id ? id : token?.user?.id;
+
   const [loading, setLoading] = useState(true)
+  const [role, setRole] = useState(null) // Add role state
   const [fullName, setFullName] = useState(null)
   const [age, setAge] = useState(null)
   const [gender, setGender] = useState(null)
@@ -16,6 +27,24 @@ export default function PatientProfile({ token }) {
   const [medicalHistory, setMedicalHistory] = useState(null)
   const [avatar_url, setAvatarUrl] = useState(null)
 
+  // Fetch user role
+  useEffect(() => {
+    async function fetchRole() {
+      if (!token?.user?.id) return;
+      
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", token.user.id)
+        .single();
+
+      if (!error && data) {
+        setRole(data.role);
+      }
+    }
+    fetchRole();
+  }, [token]);
+
   useEffect(() => {
     let ignore = false
     async function getProfile() {
@@ -24,7 +53,7 @@ export default function PatientProfile({ token }) {
       const { data, error } = await supabase
         .from('patient_profiles')
         .select(`full_name, age, gender, phone, marital_status, household_size, occupation, living_condition, travel_history, medical_history, avatar_url`)
-        .eq('user_id', token.user.id)
+        .eq('user_id', userId)
         .single()
 
       if (!ignore) {
@@ -48,21 +77,22 @@ export default function PatientProfile({ token }) {
       setLoading(false)
     }
 
-    getProfile()
+    if (token && userId) {
+      getProfile()
+    }
 
     return () => {
       ignore = true
     }
-  }, [token])
+  }, [token, userId])
 
   async function updateProfile(event, avatarUrl) {
     event.preventDefault()
 
     setLoading(true)
-    const user = token.user
 
     const updates = {
-      user_id: user.id,
+      user_id: userId,
       full_name: fullName,
       age: parseInt(age, 10),
       gender: gender,
@@ -88,11 +118,16 @@ export default function PatientProfile({ token }) {
     setLoading(false)
   }
 
+  // Add loading check for token
+  if (!token || !userId) {
+    return <div>Loading...</div>
+  }
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="w-full max-w-2xl p-6 bg-white rounded-2xl shadow-md">
         <h2 className="text-2xl font-semibold text-center text-green-600 mb-6">
-          Patient Profile
+          {isDoctor ? 'Patient Profile (View Only)' : 'Patient Profile'}
         </h2>
 
         <form onSubmit={updateProfile} className="space-y-4">
@@ -104,6 +139,7 @@ export default function PatientProfile({ token }) {
               onUpload={(event, url) => {
                 updateProfile(event, url)
               }}
+              readOnly={role === "doctor"}
             />
           </div>
 
@@ -121,7 +157,7 @@ export default function PatientProfile({ token }) {
             />
           </div>
 
-          {/* Full Name */}
+          {/* All form fields - disabled for doctors */}
           <div className="space-y-2">
             <label className="block text-green-600 font-medium" htmlFor="fullName">
               Full Name
@@ -132,11 +168,13 @@ export default function PatientProfile({ token }) {
               required
               value={fullName || ''}
               onChange={(e) => setFullName(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-colors"
+              disabled={role === "doctor"}
+              className={`w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-colors ${
+                role === "doctor" ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
+              }`}
             />
           </div>
 
-          {/* Age */}
           <div className="space-y-2">
             <label className="block text-green-600 font-medium" htmlFor="age">
               Age
@@ -147,11 +185,13 @@ export default function PatientProfile({ token }) {
               required
               value={age || ''}
               onChange={(e) => setAge(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-colors"
+              disabled={role === "doctor"}
+              className={`w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-colors ${
+                role === "doctor" ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
+              }`}
             />
           </div>
 
-          {/* Gender */}
           <div className="space-y-2">
             <label className="block text-green-600 font-medium" htmlFor="gender">
               Gender
@@ -161,7 +201,10 @@ export default function PatientProfile({ token }) {
               required
               value={gender || ''}
               onChange={(e) => setGender(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-colors"
+              disabled={role === "doctor"}
+              className={`w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-colors ${
+                role === "doctor" ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
+              }`}
             >
               <option value="">Select Gender</option>
               <option value="male">Male</option>
@@ -169,7 +212,6 @@ export default function PatientProfile({ token }) {
             </select>
           </div>
 
-          {/* Phone */}
           <div className="space-y-2">
             <label className="block text-green-600 font-medium" htmlFor="phone">
               Phone Number
@@ -180,11 +222,13 @@ export default function PatientProfile({ token }) {
               required
               value={phone || ''}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-colors"
+              disabled={role === "doctor"}
+              className={`w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-colors ${
+                role === "doctor" ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
+              }`}
             />
           </div>
 
-          {/* Marital Status */}
           <div className="space-y-2">
             <label className="block text-green-600 font-medium">
               Marital Status
@@ -197,6 +241,7 @@ export default function PatientProfile({ token }) {
                   value="single"
                   checked={maritalStatus === "single"}
                   onChange={(e) => setMaritalStatus(e.target.value)}
+                  disabled={role === "doctor"}
                   className="mr-2"
                 />
                 Single
@@ -208,6 +253,7 @@ export default function PatientProfile({ token }) {
                   value="married"
                   checked={maritalStatus === "married"}
                   onChange={(e) => setMaritalStatus(e.target.value)}
+                  disabled={role === "doctor"}
                   className="mr-2"
                 />
                 Married
@@ -215,7 +261,6 @@ export default function PatientProfile({ token }) {
             </div>
           </div>
 
-          {/* Household Size */}
           <div className="space-y-2">
             <label className="block text-green-600 font-medium" htmlFor="householdSize">
               Household Size
@@ -226,11 +271,13 @@ export default function PatientProfile({ token }) {
               required
               value={householdSize || ''}
               onChange={(e) => setHouseholdSize(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-colors"
+              disabled={role === "doctor"}
+              className={`w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-colors ${
+                role === "doctor" ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
+              }`}
             />
           </div>
 
-          {/* Occupation */}
           <div className="space-y-2">
             <label className="block text-green-600 font-medium" htmlFor="occupation">
               Occupation
@@ -241,11 +288,13 @@ export default function PatientProfile({ token }) {
               placeholder="e.g., healthcare worker, miner, etc."
               value={occupation || ''}
               onChange={(e) => setOccupation(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-colors"
+              disabled={role === "doctor"}
+              className={`w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-colors ${
+                role === "doctor" ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
+              }`}
             />
           </div>
 
-          {/* Living Condition */}
           <div className="space-y-2">
             <label className="block text-green-600 font-medium" htmlFor="livingCondition">
               Living Condition
@@ -255,7 +304,10 @@ export default function PatientProfile({ token }) {
               required
               value={livingCondition || ''}
               onChange={(e) => setLivingCondition(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-colors"
+              disabled={role === "doctor"}
+              className={`w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-colors ${
+                role === "doctor" ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
+              }`}
             >
               <option value="">Select Living Condition</option>
               <option value="crowded">Crowded housing</option>
@@ -264,7 +316,6 @@ export default function PatientProfile({ token }) {
             </select>
           </div>
 
-          {/* Travel History */}
           <div className="space-y-2">
             <label className="block text-green-600 font-medium" htmlFor="travelHistory">
               Travel History
@@ -274,12 +325,14 @@ export default function PatientProfile({ token }) {
               placeholder="Travel history (to/from high-TB burden areas)"
               value={travelHistory || ''}
               onChange={(e) => setTravelHistory(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-colors"
+              disabled={role === "doctor"}
+              className={`w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-colors ${
+                role === "doctor" ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
+              } resize-none`}
               rows="3"
             />
           </div>
 
-          {/* Medical History */}
           <div className="space-y-2">
             <label className="block text-green-600 font-medium" htmlFor="medicalHistory">
               Medical History
@@ -289,29 +342,43 @@ export default function PatientProfile({ token }) {
               placeholder="Medical history (e.g. TB exposure, other conditions)"
               value={medicalHistory || ''}
               onChange={(e) => setMedicalHistory(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-colors"
+              disabled={role === "doctor"}
+              className={`w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-colors ${
+                role === "doctor" ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''
+              } resize-none`}
               rows="3"
             />
           </div>
 
-          {/* Buttons */}
-          <div className="space-y-3 pt-4">
-            <button 
-              type="submit" 
-              disabled={loading}
-              className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-medium py-3 px-4 rounded-md transition-colors duration-200 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Loading...' : 'Update Profile'}
-            </button>
-            
-            <button 
-              type="button" 
-              onClick={() => supabase.auth.signOut()}
-              className="w-full bg-black hover:bg-gray-800 text-white font-medium py-3 px-4 rounded-md transition-colors duration-200"
-            >
-              Sign Out
-            </button>
-          </div>
+          {/* Buttons - Only show for patients */}
+          {role === "patient" && (
+            <div className="space-y-3 pt-4">
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white font-medium py-3 px-4 rounded-md transition-colors duration-200 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Loading...' : 'Update Profile'}
+              </button>
+              
+              <button 
+                type="button" 
+                onClick={() => supabase.auth.signOut()}
+                className="w-full bg-black hover:bg-gray-800 text-white font-medium py-3 px-4 rounded-md transition-colors duration-200"
+              >
+                Sign Out
+              </button>
+            </div>
+          )}
+
+          {/* Doctor viewing message */}
+          {role === "doctor" && (
+            <div className="pt-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-4 text-blue-700 text-center">
+                You are viewing this patient's profile in read-only mode.
+              </div>
+            </div>
+          )}
         </form>
       </div>
     </div>

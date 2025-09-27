@@ -16,11 +16,21 @@ const DoctorDashboard = () => {
         {/* Navigation */}
         <nav className="px-4 space-y-1">
           <Link to="home" className="block py-2 px-4 hover:bg-green-100 rounded">
-            🏠 Dashboard
+            🏠 Home
+          </Link>
+          <Link to="patientlist" className="block py-2 px-4 hover:bg-green-100 rounded">
+             PatientList
+          </Link>
+          <Link to="consultations" className="block py-2 px-4 hover:bg-green-100 rounded">
+             Consultations
+          </Link>
+          <Link to="appointments" className="block py-2 px-4 hover:bg-green-100 rounded">
+            Appointments
           </Link>
           <Link to="profile" className="block py-2 px-4 hover:bg-green-100 rounded">
-            👤 Profile
+            Profile
           </Link>
+          
         </nav>
       </div>
 
