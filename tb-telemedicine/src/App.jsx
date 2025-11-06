@@ -8,7 +8,8 @@ import {
   LabResults as PatientLabResults,
   Teleconsultation as PatientTeleconsultation,
   ERecord as PatientERecord,
-  BookAppointment as PatientBookAppointment
+  BookAppointment as PatientBookAppointment,
+  PatientAppointments as PatientAppointments
  } from "./pages/patient";
 import { 
     Appointments as Appointments,
@@ -51,14 +52,15 @@ const App = () => {
         <Route path="labresults" element={<PatientLabResults token={token}/>}/>
         <Route path="erecord" element={<PatientERecord token={token}/>}/>
         <Route path="teleconsultation" element={<PatientTeleconsultation/>}/>
-        <Route path="patientbookappointment" element={<PatientBookAppointment/>}/>
+        <Route path="patientbookappointment" element={<PatientBookAppointment token={token}/>}/>
+        <Route path="patientappointments" element={<PatientAppointments token={token}/>} />
       </Route>
 
       <Route path="/doctor" element={<DoctorDashboard />}>
         <Route path="home" element={<DoctorHome token={token} />} />
         <Route path="profile" element={< DoctorProfile token={token} />} />
-        <Route path="appointments" element={< Appointments/>} />
-        <Route path="consultations" element={< Consultations />} />
+        <Route path="appointments" element={< Appointments token={token}/>} />
+        <Route path="consultations" element={< Consultations token={token} />} />
         <Route path="patientlist" element={< PatientList />} />
           {/* ✅ New doctor routes for patient detail views */}
         <Route path="patient/:id/patientprofile" element={<PatientProfile token={token} />} /> 

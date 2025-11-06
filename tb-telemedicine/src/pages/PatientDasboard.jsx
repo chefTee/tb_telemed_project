@@ -16,25 +16,28 @@ const PatientDashboard = () => {
         {/* Navigation */}
         <nav className="px-4 space-y-1">
           <Link to="home" className="block py-2 px-4 hover:bg-blue-100 rounded">
-            🏠 Home
+            Home
           </Link>
           <Link to="patientprofile" className="block py-2 px-4 hover:bg-blue-100 rounded">
-            👤 Profile
+            Profile
           </Link>
           <Link to="symptomchecklist" className="block py-2 px-4 hover:bg-blue-100 rounded">
-            ❓ Symptom Checklist
+            Symptom Checklist
           </Link>
           <Link to="labresults" className="block py-2 px-4 hover:bg-blue-100 rounded">
-            🧪 Lab Results
+            Lab Results
           </Link>
           <Link to="patientbookappointment" className="block py-2 px-4 hover:bg-blue-100 rounded">
-            💼 Book Appointment
+            Book Appointment
+          </Link>
+          <Link to="patientappointments" className="block py-2 px-4 hover:bg-blue-100 rounded">
+            Appointments
           </Link>
           <Link to="teleconsultation" className="block py-2 px-4 hover:bg-blue-100 rounded">
-            📹 Teleconsultation
+            Teleconsultation
           </Link>
           <Link to="erecord" className="block py-2 px-4 hover:bg-blue-100 rounded">
-            📄 E-Record
+             E-Record
           </Link>
         </nav>
       </div>

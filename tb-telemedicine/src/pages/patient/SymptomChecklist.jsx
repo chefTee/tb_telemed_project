@@ -54,7 +54,7 @@ export default function SymptomChecklist() {
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
       <div className="w-full max-w-2xl p-6 bg-white rounded-2xl shadow-md">
         <h2 className="text-2xl font-semibold text-center text-green-600 mb-6">
-          Tuberculosis Symptom Checklist
+          Tuberculosis Symptom Checklist (WHO)
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
